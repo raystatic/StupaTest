@@ -99,14 +99,21 @@
         android:visibility="gone"
         android:src="@drawable/ic_star_red"/>
 
-    <ImageView
-        android:layout_width="50dp"
-        android:layout_height="50dp"
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/bottomBar"
-        app:layout_constraintBottom_toBottomOf="@id/bottomBar"
-        android:id="@+id/starFour"
-        android:visibility="gone"
-        android:src="@drawable/ic_star_yellow"/>
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <ImageView
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:id="@+id/starFour"
+            android:visibility="visible"
+            android:src="@drawable/ic_star_yellow"/>
+
+    </RelativeLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

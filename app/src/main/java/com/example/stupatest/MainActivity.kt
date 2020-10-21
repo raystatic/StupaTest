@@ -6,9 +6,11 @@ import android.os.Bundle
 import android.util.Log
 import android.view.MotionEvent
 import android.view.View
+import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.lifecycle.Observer
 import com.example.stupatest.ViewExtension.hide
 import com.example.stupatest.ViewExtension.show
 import kotlinx.android.synthetic.main.activity_main.*
@@ -21,6 +23,8 @@ class MainActivity : AppCompatActivity() {
     private val TAG = "MainActivityDebug"
 
     private var starCount = 0
+
+    private var starList = mutableListOf<StarData>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,41 +46,27 @@ class MainActivity : AppCompatActivity() {
 
         setupBars()
 
+        subscribeToIbservers()
+
+
         topBar.setOnTouchListener { view, motionEvent ->
             when(motionEvent.action){
                 MotionEvent.ACTION_UP -> {
 
                     Log.d(TAG, "onCreate: starCount: $starCount")
 
-                    if (starCount in 0..1){
-                        view.performClick()
+                    view.performClick()
 
-                        val x =  motionEvent.x
-                        val y =motionEvent.y
+                    val x =  motionEvent.x
+                    val y =motionEvent.y
 
-                        Log.d(TAG, "onCreate: topBar Coordinates $x $y")
+                    Log.d(TAG, "onCreate: topBar Coordinates $x $y")
 
-                        when(starCount){
-                            0 -> {
-                                starOne.show()
-                                starOne.x = x
-                                starOne.y = y
-                                starCount = 1
-                                starTwo.hide()
-                                starThree.hide()
-                                starFour.hide()
-                            }
+                    starList.add(StarData(x,y))
 
-                            1 -> {
-                                starTwo.show()
-                                starTwo.x = x
-                                starTwo.y = y
-                                starCount = 2
-                                starThree.hide()
-                                starFour.hide()
-                            }
-                        }
-                    }
+                    LiveDataHelper.getInstance()?.setStarCount(starList)
+
+                    starCount++
 
                     return@setOnTouchListener true
                 }
@@ -90,36 +80,21 @@ class MainActivity : AppCompatActivity() {
             return@setOnTouchListener false
         }
 
+
+
         bottomBar.setOnTouchListener { view, motionEvent ->
             when(motionEvent.action){
                 MotionEvent.ACTION_UP -> {
 
-                    if (starCount in 2..3){
-                        view.performClick()
+                    view.performClick()
 
-                        val x =  motionEvent.x
-                        val y =motionEvent.y
+                    val x =  motionEvent.x
+                    val y =motionEvent.y
+                    Log.d(TAG, "onCreate: topBar Coordinates $x $y")
+                    starList.add(StarData(x,y))
 
-                        Log.d(TAG, "onCreate: topBar Coordinates $x $y")
-
-                        when(starCount){
-
-                            2 -> {
-                                starThree.show()
-                                starThree.x = x
-                                starThree.y = y
-                                starCount = 3
-                                starFour.hide()
-                            }
-
-                            3 -> {
-                                starFour.show()
-                                starFour.x = x
-                                starFour.y = y
-                                starCount = 4
-                            }
-                        }
-                    }
+                    LiveDataHelper.getInstance()?.setStarCount(starList)
+                    starCount++
 
                     return@setOnTouchListener true
                 }
@@ -133,7 +108,28 @@ class MainActivity : AppCompatActivity() {
             return@setOnTouchListener false
         }
 
+        btnUndo.setOnClickListener {
+            if (starCount>0){
+                starCount--
+                starList.removeAt(starList.size-1)
+                LiveDataHelper.getInstance()?.setStarCount(starList)
+            }
+        }
 
+
+    }
+
+    private fun subscribeToIbservers() {
+        LiveDataHelper.getInstance()?.starCount?.observe(this, Observer {
+            Log.d(TAG, "subscribeToIbservers: starCount: $starCount")
+            starList.forEach {
+//                val star = ImageView(this)
+//                star.setImageResource(R.drawable.ic_star_yellow)
+                starFour.show()
+                starFour.x = it.x
+                starFour.y = it.y
+            }
+        })
     }
 
     private fun setupBars() {
