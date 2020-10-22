@@ -1,5 +1,6 @@
 package com.example.stupatest.ui
 
+import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.hardware.Camera
@@ -11,6 +12,8 @@ import android.widget.RelativeLayout
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
 import com.example.stupatest.other.LiveDataHelper
 import com.example.stupatest.R
@@ -20,10 +23,19 @@ import com.example.stupatest.other.ViewExtension.show
 import com.example.stupatest.viewmodels.ShapeViewModel
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.karumi.dexter.Dexter
+import com.karumi.dexter.MultiplePermissionsReport
+import com.karumi.dexter.PermissionToken
+import com.karumi.dexter.listener.PermissionDeniedResponse
+import com.karumi.dexter.listener.PermissionGrantedResponse
+import com.karumi.dexter.listener.PermissionRequest
+import com.karumi.dexter.listener.multi.MultiplePermissionsListener
+import com.karumi.dexter.listener.single.PermissionListener
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlin.math.abs
 
+const val REQUEST_PERMISSION = 100
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
 
@@ -45,6 +57,8 @@ class MainActivity : AppCompatActivity() {
         if (!isCameraSupported()){
             Toast.makeText(this, "Camera not supported.. Exiting application", Toast.LENGTH_SHORT).show()
         }
+
+        askPermission()
 
         mCamera = getCameraInstance()
 
@@ -166,6 +180,40 @@ class MainActivity : AppCompatActivity() {
 
     }
 
+    private fun askPermission() {
+        Dexter.withActivity(this)
+            .withPermission(Manifest.permission.CAMERA)
+            .withListener(object : PermissionListener{
+
+                override fun onPermissionGranted(response: PermissionGrantedResponse?) {
+                    mCamera = getCameraInstance()
+                    mPreview = mCamera?.let {
+                        CameraPreview(this@MainActivity, it)
+                    }
+
+                    mPreview?.also {
+                        camera_preview.addView(it)
+                    }
+                }
+
+                override fun onPermissionRationaleShouldBeShown(
+                    permission: PermissionRequest?,
+                    token: PermissionToken?
+                ) {
+                    token?.continuePermissionRequest()
+                }
+
+                override fun onPermissionDenied(response: PermissionDeniedResponse?) {
+                    Toast.makeText(
+                        this@MainActivity,
+                        "Camera permission not granted",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }).check()
+    }
+
+
     private fun subscribeToIbservers() {
         LiveDataHelper.getInstance()?.starCount?.observe(this, Observer {
             Log.d(TAG, "subscribeToIbservers: starCount: ${starList.size} ${it.size} $it")
@@ -220,6 +268,7 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         starCount = 0
+        frameStars.removeAllViews()
     }
 
 }
