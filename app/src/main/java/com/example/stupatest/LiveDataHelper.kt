@@ -21,8 +21,7 @@ class LiveDataHelper {
         }
     }
 
-    fun setStarCount(starData: List<StarData>) {
-
+    fun setStarCount(starData: MutableList<StarData>) {
         _starCount.postValue(starData)
     }
 

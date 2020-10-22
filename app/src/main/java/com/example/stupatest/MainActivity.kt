@@ -2,11 +2,15 @@ package com.example.stupatest
 
 import android.content.pm.PackageManager
 import android.hardware.Camera
+import android.media.Image
 import android.os.Bundle
 import android.util.Log
 import android.view.MotionEvent
 import android.view.View
+import android.view.ViewGroup
+import android.widget.FrameLayout
 import android.widget.ImageView
+import android.widget.RelativeLayout
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
@@ -14,6 +18,7 @@ import androidx.lifecycle.Observer
 import com.example.stupatest.ViewExtension.hide
 import com.example.stupatest.ViewExtension.show
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlin.math.abs
 
 class MainActivity : AppCompatActivity() {
 
@@ -50,30 +55,24 @@ class MainActivity : AppCompatActivity() {
 
 
         topBar.setOnTouchListener { view, motionEvent ->
+
             when(motionEvent.action){
-                MotionEvent.ACTION_UP -> {
-
-                    Log.d(TAG, "onCreate: starCount: $starCount")
-
-                    view.performClick()
-
-                    val x =  motionEvent.x
-                    val y =motionEvent.y
-
-                    Log.d(TAG, "onCreate: topBar Coordinates $x $y")
-
-                    starList.add(StarData(x,y))
-
-                    LiveDataHelper.getInstance()?.setStarCount(starList)
-
-                    starCount++
-
-                    return@setOnTouchListener true
-                }
                 MotionEvent.ACTION_DOWN -> {
-                    if (starCount in 0..1)
+                    if (starList.size < 2){
                         view.performClick()
-                    return@setOnTouchListener true
+                        val loc = IntArray(2)
+                        view.getLocationOnScreen(loc)
+
+                        val x = abs(abs(motionEvent.x.toInt() - loc[0]) - 50)
+                        val y = abs(abs(motionEvent.y.toInt() - loc[1]) - 50)
+                        Log.d(TAG, "onCreate: topBar Coordinates $x $y")
+                        starList.add(StarData(x.toFloat(),y.toFloat()))
+
+                        LiveDataHelper.getInstance()?.setStarCount(starList)
+                        starCount++
+
+                        return@setOnTouchListener true
+                    }
                 }
             }
 
@@ -83,25 +82,25 @@ class MainActivity : AppCompatActivity() {
 
 
         bottomBar.setOnTouchListener { view, motionEvent ->
+
             when(motionEvent.action){
-                MotionEvent.ACTION_UP -> {
-
-                    view.performClick()
-
-                    val x =  motionEvent.x
-                    val y =motionEvent.y
-                    Log.d(TAG, "onCreate: topBar Coordinates $x $y")
-                    starList.add(StarData(x,y))
-
-                    LiveDataHelper.getInstance()?.setStarCount(starList)
-                    starCount++
-
-                    return@setOnTouchListener true
-                }
                 MotionEvent.ACTION_DOWN -> {
-                    if (starCount in 2..3)
+
+                    if (starList.size < 4){
                         view.performClick()
-                    return@setOnTouchListener true
+                        val loc = IntArray(2)
+                        view.getLocationOnScreen(loc)
+
+                        val x = abs(abs(motionEvent.x.toInt() - loc[0]) - 50)
+                        val y = abs(abs(motionEvent.y.toInt() - loc[1]) - 50)
+                        Log.d(TAG, "onCreate: topBar Coordinates $x $y")
+                        starList.add(StarData(x.toFloat(),y.toFloat()))
+
+                        LiveDataHelper.getInstance()?.setStarCount(starList)
+                        starCount++
+
+                        return@setOnTouchListener true
+                    }
                 }
             }
 
@@ -109,7 +108,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         btnUndo.setOnClickListener {
-            if (starCount>0){
+            if (starList.size>0){
                 starCount--
                 starList.removeAt(starList.size-1)
                 LiveDataHelper.getInstance()?.setStarCount(starList)
@@ -121,13 +120,21 @@ class MainActivity : AppCompatActivity() {
 
     private fun subscribeToIbservers() {
         LiveDataHelper.getInstance()?.starCount?.observe(this, Observer {
-            Log.d(TAG, "subscribeToIbservers: starCount: $starCount")
-            starList.forEach {
-//                val star = ImageView(this)
-//                star.setImageResource(R.drawable.ic_star_yellow)
-                starFour.show()
-                starFour.x = it.x
-                starFour.y = it.y
+            Log.d(TAG, "subscribeToIbservers: starCount: ${starList.size} ${it.size} $it")
+            frameStars.removeAllViews()
+            it.forEach {
+                val star = ImageView(this)
+                star.setImageResource(R.drawable.ic_star_yellow)
+                val scale = this.resources.displayMetrics.density
+//                star.layoutParams = ViewGroup.LayoutParams(50,50)
+                frameStars.addView(star)
+                star.requestLayout()
+                star.scaleType = ImageView.ScaleType.FIT_CENTER
+                star.layoutParams.width = (50 * scale).toInt()
+                star.layoutParams.height = (50 * scale).toInt()
+                star.x = it.x
+                star.y = it.y
+              //  Log.d(TAG, "subscribeToIbservers: dims ${it.x} ${it.y} ${star.translationX} ${star.translationY} ")
             }
         })
     }
@@ -139,11 +146,11 @@ class MainActivity : AppCompatActivity() {
 
         val reqMargin = this.resources.displayMetrics.heightPixels/4
 
-        val topBarParams = topBar.layoutParams as ConstraintLayout.LayoutParams
-        topBarParams.setMargins(0,reqMargin,0,0)
+        val topBarParams = topBar.layoutParams as RelativeLayout.LayoutParams
+        topBarParams.topMargin = reqMargin
 
-        val bottomBarParams = bottomBar.layoutParams as ConstraintLayout.LayoutParams
-        bottomBarParams.setMargins(0,0,0, reqMargin)
+        val bottomBarParams = bottomBar.layoutParams as RelativeLayout.LayoutParams
+        bottomBarParams.bottomMargin = reqMargin
 
         topBar.layoutParams = topBarParams
 
