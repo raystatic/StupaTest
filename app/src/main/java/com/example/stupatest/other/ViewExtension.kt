@@ -1,4 +1,4 @@
-package com.example.stupatest
+package com.example.stupatest.other
 
 import android.graphics.Point
 import android.view.View
@@ -14,7 +14,7 @@ object ViewExtension {
 
     fun getLocationOnScreen(): Point {
         val location = IntArray(2)
-        this.getLocationOnScreen()
+        getLocationOnScreen()
         return Point(location[0],location[1])
     }
 }

@@ -1,7 +1,8 @@
-package com.example.stupatest
+package com.example.stupatest.other
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
+import com.example.stupatest.models.StarData
 
 class LiveDataHelper {
 
@@ -11,11 +12,12 @@ class LiveDataHelper {
         get() = _starCount
 
     companion object{
-        var liveDataHelper:LiveDataHelper?=null
+        var liveDataHelper: LiveDataHelper?=null
 
         @Synchronized
-        fun getInstance():LiveDataHelper?{
-            if (liveDataHelper == null) liveDataHelper = LiveDataHelper()
+        fun getInstance(): LiveDataHelper?{
+            if (liveDataHelper == null) liveDataHelper =
+                LiveDataHelper()
 
             return liveDataHelper
         }

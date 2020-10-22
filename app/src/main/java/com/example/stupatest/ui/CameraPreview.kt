@@ -1,4 +1,4 @@
-package com.example.stupatest
+package com.example.stupatest.ui
 
 import android.content.Context
 import android.hardware.Camera

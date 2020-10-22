@@ -1,4 +1,4 @@
-package com.example.stupatest
+package com.example.stupatest.models
 
 data class StarData(
     val x:Float,
